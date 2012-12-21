@@ -18,18 +18,13 @@ RISE.prototypes.mesh = {
 	build: function(vb, ib) {
 		var gl = this.gl;
 		
-		// destroy any existing buffers
-		this.release();
-
 		// allocate and fill vertex buffer object
-		this.vertex = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.vertex);
 		gl.bufferData(gl.ARRAY_BUFFER, vb.data.subarray(0, vb.length), gl.STATIC_DRAW);
 		this.vertexCount = vb.length;
 		
 		// allocate and fill index buffer object, if data is present
 		if (ib) {
-			this.index = gl.createBuffer();
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.index);
 			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, ib.data.subarray(0, ib.length), gl.STATIC_DRAW);
 			this.indexCount = ib.length;
@@ -60,10 +55,10 @@ RISE.prototypes.mesh = {
 		}
 		
 		// draw the vertex arrays (by index, if present)
-		if (this.indexLength > 0) {
-			gl.drawElements(this.drawPrimitive, this.indexLength, gl.UNSIGNED_SHORT, 0);
+		if (this.indexCount > 0) {
+			gl.drawElements(this.drawPrimitive, this.indexCount, gl.UNSIGNED_SHORT, 0);
 		} else {
-			gl.drawArrays(this.drawPrimitive, 0, this.vertexLength / this.stride);
+			gl.drawArrays(this.drawPrimitive, 0, this.vertexCount / this.stride);
 		}
 
 		// disable each attribute
@@ -90,7 +85,7 @@ RISE.prototypes.mesh = {
 	id and sz must be the same length. typically,
 	the call will be of the form
 	
-		mesh = RISE.createMesh( gl, [ "position", "normal" ], [3, 3] );
+		mesh = RISE.createMesh( gl, [ shader.position, shader.normal ], [3, 3] );
 		
 	see the shader object for a similar convention
 	
@@ -113,8 +108,8 @@ RISE.createMesh = function(gl, id, sz, dp) {
 	o.gl = gl;
 	o.drawPrimitive = dp || gl.TRIANGLES;
 
-	o.vertex = -1;
-	o.index = -1;
+	o.vertex = gl.createBuffer();
+	o.index = gl.createBuffer();
 	o.vertexCount = 0;
 	o.indexCount = 0;
 

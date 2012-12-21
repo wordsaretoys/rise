@@ -84,7 +84,7 @@ RISE.prototypes.mote = {
 	**/
 	updateModelview: function() {
 		var modelview = this.modelview;
-		var p = position;
+		var p = this.position;
 		modelview[12] = -(modelview[0] * p.x + modelview[4] * p.y + modelview[8] * p.z);
 		modelview[13] = -(modelview[1] * p.x + modelview[5] * p.y + modelview[9] * p.z);
 		modelview[14] = -(modelview[2] * p.x + modelview[6] * p.y + modelview[10] * p.z);
@@ -117,10 +117,10 @@ RISE.createMote = function() {
 	o.qx = RISE.createQuaternion();
 	o.qy = RISE.createQuaternion();
 	o.qz = RISE.createQuaternion();
-		
-	rotations[0] = rotations[5] = rotations[10] = rotations[15] = 1;
-	transpose[0] = transpose[5] = transpose[10] = transpose[15] = 1;
-	modelview[0] = modelview[5] = modelview[10] = modelview[15] = 1;
+	
+	o.rotations.set(RISE.math.MAT_ID_4);
+	o.transpose.set(RISE.math.MAT_ID_4);
+	o.modelview.set(RISE.math.MAT_ID_4);
 
 	o.updateModelview();
 			

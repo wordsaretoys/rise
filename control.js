@@ -107,8 +107,9 @@ RISE.prototypes.control = {
 
 	setFullscreen: function() {
 		var db = document.body;
-		var requestFullscreen = db.requestFullscreen || db.mozRequestFullScreen || db.webkitRequestFullscreen;
-		requestFullscreen();
+		db.requestFullscreen = db.requestFullscreen || db.mozRequestFullscreen || 
+			db.mozRequestFullScreen || db.webkitRequestFullscreen;
+		db.requestFullscreen();
 	}
 
 };
@@ -123,6 +124,7 @@ RISE.prototypes.control = {
 RISE.createControl = function() {
 
 	var o = Object.create(RISE.prototypes.control);
+	o.action = [];
 
 	var raw = {
 		down: false,
@@ -130,8 +132,8 @@ RISE.createControl = function() {
 		lastX: 0,
 		lastY: 0,
 		dx: 0,
-		dy: 0
-		run = true;
+		dy: 0,
+		run: false
 	};
 
 	// keyboard events we pass to the calling application

@@ -314,12 +314,13 @@ RISE.prototypes.surfacer = {
 	**/
 		
 	verp: function(p, xa, ya, za, xb, yb, zb, fa, fb) {
+		var th = this.threshold;
 		// handle edge cases
-		if (Math.abs(thresh - fa) < 0.00001) {
+		if (Math.abs(th - fa) < 0.00001) {
 			p.x = xa;
 			p.y = ya;
 			p.z = za;
-		} else if (Math.abs(thresh - fb) < 0.00001) {
+		} else if (Math.abs(th - fb) < 0.00001) {
 			p.x = xb;
 			p.y = yb;
 			p.z = zb;
@@ -329,7 +330,7 @@ RISE.prototypes.surfacer = {
 			p.z = za;
 		} else {
 			// perform interpolation
-			var mu = (thresh - fa) / (fb - fa);
+			var mu = (th - fa) / (fb - fa);
 			p.x = xa + mu * (xb - xa);
 			p.y = ya + mu * (yb - ya);
 			p.z = za + mu * (zb - za);
@@ -352,7 +353,6 @@ RISE.prototypes.surfacer = {
 		
 		var source = this.source;
 		var handle = this.handle;
-		var verp = this.verp;
 		
 		var size = this.size;
 		var step = this.step;
@@ -402,40 +402,40 @@ RISE.prototypes.surfacer = {
 				
 					// find where the surface intersects the cube
 					if (et[cind] & 1) {
-						verp(vl[0], x0, y0, z0, x1, y0, z0, f0, f1);
+						this.verp(vl[0], x0, y0, z0, x1, y0, z0, f0, f1);
 					}
 					if (et[cind] & 2) {
-						verp(vl[1], x1, y0, z0, x1, y0, z1, f1, f2);
+						this.verp(vl[1], x1, y0, z0, x1, y0, z1, f1, f2);
 					}
 					if (et[cind] & 4) {
-						verp(vl[2], x1, y0, z1, x0, y0, z1, f2, f3);
+						this.verp(vl[2], x1, y0, z1, x0, y0, z1, f2, f3);
 					}
 					if (et[cind] & 8) {
-						verp(vl[3], x0, y0, z1, x0, y0, z0, f3, f0);
+						this.verp(vl[3], x0, y0, z1, x0, y0, z0, f3, f0);
 					}
 					if (et[cind] & 16) {
-						verp(vl[4], x0, y1, z0, x1, y1, z0, f4, f5);
+						this.verp(vl[4], x0, y1, z0, x1, y1, z0, f4, f5);
 					}
 					if (et[cind] & 32) {
-						verp(vl[5], x1, y1, z0, x1, y1, z1, f5, f6);
+						this.verp(vl[5], x1, y1, z0, x1, y1, z1, f5, f6);
 					}
 					if (et[cind] & 64) {
-						verp(vl[6], x1, y1, z1, x0, y1, z1, f6, f7);
+						this.verp(vl[6], x1, y1, z1, x0, y1, z1, f6, f7);
 					}
 					if (et[cind] & 128) {
-						verp(vl[7], x0, y1, z1, x0, y1, z0, f7, f4);
+						this.verp(vl[7], x0, y1, z1, x0, y1, z0, f7, f4);
 					}
 					if (et[cind] & 256) {
-						verp(vl[8], x0, y0, z0, x0, y1, z0, f0, f4);
+						this.verp(vl[8], x0, y0, z0, x0, y1, z0, f0, f4);
 					}
 					if (et[cind] & 512) {
-						verp(vl[9], x1, y0, z0, x1, y1, z0, f1, f5);
+						this.verp(vl[9], x1, y0, z0, x1, y1, z0, f1, f5);
 					}
 					if (et[cind] & 1024) {
-						verp(vl[10], x1, y0, z1, x1, y1, z1, f2, f6);
+						this.verp(vl[10], x1, y0, z1, x1, y1, z1, f2, f6);
 					}
 					if (et[cind] & 2048) {
-						verp(vl[11], x0, y0, z1, x0, y1, z1, f3, f7);
+						this.verp(vl[11], x0, y0, z1, x0, y1, z1, f3, f7);
 					}
 			
 					nn.x = (f1 + f2 + f5 + f6) - (f0 + f3 + f4 + f7);

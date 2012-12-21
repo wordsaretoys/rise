@@ -1,4 +1,4 @@
-/** generated on Thu Dec 20 23:12:10 EST 2012 **/
+/** generated on Fri Dec 21 10:19:05 EST 2012 **/
 
 /**
 	Rise Object Library for WebGL Applications
@@ -368,8 +368,9 @@ RISE.prototypes.control = {
 
 	setFullscreen: function() {
 		var db = document.body;
-		var requestFullscreen = db.requestFullscreen || db.mozRequestFullScreen || db.webkitRequestFullscreen;
-		requestFullscreen();
+		db.requestFullscreen = db.requestFullscreen || db.mozRequestFullscreen || 
+			db.mozRequestFullScreen || db.webkitRequestFullscreen;
+		db.requestFullscreen();
 	}
 
 };
@@ -384,7 +385,7 @@ RISE.prototypes.control = {
 RISE.createControl = function() {
 
 	var o = Object.create(RISE.prototypes.control);
-	o.running = true;
+	o.action = [];
 
 	var raw = {
 		down: false,
@@ -392,12 +393,13 @@ RISE.createControl = function() {
 		lastX: 0,
 		lastY: 0,
 		dx: 0,
-		dy: 0
+		dy: 0,
+		run: false
 	};
 
 	// keyboard events we pass to the calling application
 	window.addEventListener("keydown", function(e) {
-		if (o.running) {
+		if (raw.run) {
 			var action = o.lookup(e.keyCode);
 			if (action) {
 				action.event(true);
@@ -409,7 +411,7 @@ RISE.createControl = function() {
 	}, false);
 
 	window.addEventListener("keyup", function(e) {
-		if (o.running) {
+		if (raw.run) {
 			var action = o.lookup(e.keyCode);
 			if (action) {
 				action.event(false);
@@ -422,7 +424,7 @@ RISE.createControl = function() {
 
 	// but mouse events we handle locally
 	document.body.addEventListener("mousedown", function(e) {
-		if (o.running) {
+		if (raw.run) {
 			var action = o.lookup(-e.button);
 			if (action) {
 				action.event(true);
@@ -438,7 +440,7 @@ RISE.createControl = function() {
 	}, false);
 	
 	document.body.addEventListener("mouseup", function(e) {
-		if (o.running) {
+		if (raw.run) {
 			var action = o.lookup(-e.button);
 			if (action) {
 				action.event(false);
@@ -450,7 +452,7 @@ RISE.createControl = function() {
 	}, false);
 
 	document.body.addEventListener("mousemove", function(e) {
-		if (o.running && (raw.down || raw.lock)) {
+		if (raw.run && (raw.down || raw.lock)) {
 			// if the movement properties are available
 			if (typeof(e.movementX) !== "undefined" ||
 			typeof(e.mozMovementX) !== "undefined" ||
@@ -470,21 +472,14 @@ RISE.createControl = function() {
 		return false;
 	}, false);
 	
-	// define tracking update method
-	o.update = function() {
-		o.trackX = raw.dx;
-		o.trackY = raw.dy;
-		raw.dx = 0;
-		raw.dy = 0;
-	}
-	
-	// handle full screen change event
+	// set handler for full screen change event
 	var fullScreenChange = function () {
 		var db = document.body;
 		if (document.fullScreenElement === db || 
 		document.webkitFullscreenElement === db ||
 		document.mozFullscreenElement === db ||	
 		document.mozFullScreenElement === db) {
+			// if we go full screen, we want pointer lock too
 			db.requestPointerLock = db.requestPointerLock || 
 				db.mozRequestPointerLock || db.webkitRequestPointerLock;
 			db.requestPointerLock();
@@ -495,9 +490,10 @@ RISE.createControl = function() {
 	document.addEventListener("mozfullscreenchange", fullScreenChange, false);
 	document.addEventListener("webkitfullscreenchange", fullScreenChange, false);
 	
-	// handle pointer lock event
+	// set handler for pointer lock event
 	var pointerLockChange = function () {
 		var db = document.body;
+		// if pointer lock succeeded, set raw flag
 		if (document.pointerLockElement === db || 
 		document.webkitPointerLockElement === db ||
 		document.mozPointerLockElement === db) {
@@ -510,6 +506,22 @@ RISE.createControl = function() {
 	document.addEventListener('pointerlockchange', pointerLockChange, false);
 	document.addEventListener('mozpointerlockchange', pointerLockChange, false);
 	document.addEventListener('webkitpointerlockchange', pointerLockChange, false);
+	
+	// add control and update methods
+	// (can't be defined in prototype
+	// as they interact with closure)
+	o.update = function() {
+		o.trackX = raw.dx;
+		o.trackY = raw.dy;
+		raw.dx = 0;
+		raw.dy = 0;
+	};
+	o.start = function() {
+		raw.run = true;
+	};
+	o.stop = function() {
+		raw.run = false;
+	};
 	
 	return o;
 };
@@ -586,6 +598,13 @@ RISE.createDisplay = function(id, alpha) {
 **/
 
 RISE.math = {
+
+	MAT_ID_4: [
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	],
 
 	/**
 		return the sign of a number
@@ -710,7 +729,6 @@ RISE.math = {
 
 		return a;
 	}
-
 };
 
 
@@ -734,18 +752,13 @@ RISE.prototypes.mesh = {
 	build: function(vb, ib) {
 		var gl = this.gl;
 		
-		// destroy any existing buffers
-		this.release();
-
 		// allocate and fill vertex buffer object
-		this.vertex = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.vertex);
 		gl.bufferData(gl.ARRAY_BUFFER, vb.data.subarray(0, vb.length), gl.STATIC_DRAW);
 		this.vertexCount = vb.length;
 		
 		// allocate and fill index buffer object, if data is present
 		if (ib) {
-			this.index = gl.createBuffer();
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.index);
 			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, ib.data.subarray(0, ib.length), gl.STATIC_DRAW);
 			this.indexCount = ib.length;
@@ -776,10 +789,10 @@ RISE.prototypes.mesh = {
 		}
 		
 		// draw the vertex arrays (by index, if present)
-		if (this.indexLength > 0) {
-			gl.drawElements(this.drawPrimitive, this.indexLength, gl.UNSIGNED_SHORT, 0);
+		if (this.indexCount > 0) {
+			gl.drawElements(this.drawPrimitive, this.indexCount, gl.UNSIGNED_SHORT, 0);
 		} else {
-			gl.drawArrays(this.drawPrimitive, 0, this.vertexLength / this.stride);
+			gl.drawArrays(this.drawPrimitive, 0, this.vertexCount / this.stride);
 		}
 
 		// disable each attribute
@@ -806,7 +819,7 @@ RISE.prototypes.mesh = {
 	id and sz must be the same length. typically,
 	the call will be of the form
 	
-		mesh = RISE.createMesh( gl, [ "position", "normal" ], [3, 3] );
+		mesh = RISE.createMesh( gl, [ shader.position, shader.normal ], [3, 3] );
 		
 	see the shader object for a similar convention
 	
@@ -829,8 +842,8 @@ RISE.createMesh = function(gl, id, sz, dp) {
 	o.gl = gl;
 	o.drawPrimitive = dp || gl.TRIANGLES;
 
-	o.vertex = -1;
-	o.index = -1;
+	o.vertex = gl.createBuffer();
+	o.index = gl.createBuffer();
 	o.vertexCount = 0;
 	o.indexCount = 0;
 
@@ -1007,7 +1020,7 @@ RISE.prototypes.mote = {
 	**/
 	updateModelview: function() {
 		var modelview = this.modelview;
-		var p = position;
+		var p = this.position;
 		modelview[12] = -(modelview[0] * p.x + modelview[4] * p.y + modelview[8] * p.z);
 		modelview[13] = -(modelview[1] * p.x + modelview[5] * p.y + modelview[9] * p.z);
 		modelview[14] = -(modelview[2] * p.x + modelview[6] * p.y + modelview[10] * p.z);
@@ -1040,10 +1053,10 @@ RISE.createMote = function() {
 	o.qx = RISE.createQuaternion();
 	o.qy = RISE.createQuaternion();
 	o.qz = RISE.createQuaternion();
-		
-	rotations[0] = rotations[5] = rotations[10] = rotations[15] = 1;
-	transpose[0] = transpose[5] = transpose[10] = transpose[15] = 1;
-	modelview[0] = modelview[5] = modelview[10] = modelview[15] = 1;
+	
+	o.rotations.set(RISE.math.MAT_ID_4);
+	o.transpose.set(RISE.math.MAT_ID_4);
+	o.modelview.set(RISE.math.MAT_ID_4);
 
 	o.updateModelview();
 			
@@ -1670,12 +1683,13 @@ RISE.prototypes.surfacer = {
 	**/
 		
 	verp: function(p, xa, ya, za, xb, yb, zb, fa, fb) {
+		var th = this.threshold;
 		// handle edge cases
-		if (Math.abs(thresh - fa) < 0.00001) {
+		if (Math.abs(th - fa) < 0.00001) {
 			p.x = xa;
 			p.y = ya;
 			p.z = za;
-		} else if (Math.abs(thresh - fb) < 0.00001) {
+		} else if (Math.abs(th - fb) < 0.00001) {
 			p.x = xb;
 			p.y = yb;
 			p.z = zb;
@@ -1685,7 +1699,7 @@ RISE.prototypes.surfacer = {
 			p.z = za;
 		} else {
 			// perform interpolation
-			var mu = (thresh - fa) / (fb - fa);
+			var mu = (th - fa) / (fb - fa);
 			p.x = xa + mu * (xb - xa);
 			p.y = ya + mu * (yb - ya);
 			p.z = za + mu * (zb - za);
@@ -1708,7 +1722,6 @@ RISE.prototypes.surfacer = {
 		
 		var source = this.source;
 		var handle = this.handle;
-		var verp = this.verp;
 		
 		var size = this.size;
 		var step = this.step;
@@ -1758,40 +1771,40 @@ RISE.prototypes.surfacer = {
 				
 					// find where the surface intersects the cube
 					if (et[cind] & 1) {
-						verp(vl[0], x0, y0, z0, x1, y0, z0, f0, f1);
+						this.verp(vl[0], x0, y0, z0, x1, y0, z0, f0, f1);
 					}
 					if (et[cind] & 2) {
-						verp(vl[1], x1, y0, z0, x1, y0, z1, f1, f2);
+						this.verp(vl[1], x1, y0, z0, x1, y0, z1, f1, f2);
 					}
 					if (et[cind] & 4) {
-						verp(vl[2], x1, y0, z1, x0, y0, z1, f2, f3);
+						this.verp(vl[2], x1, y0, z1, x0, y0, z1, f2, f3);
 					}
 					if (et[cind] & 8) {
-						verp(vl[3], x0, y0, z1, x0, y0, z0, f3, f0);
+						this.verp(vl[3], x0, y0, z1, x0, y0, z0, f3, f0);
 					}
 					if (et[cind] & 16) {
-						verp(vl[4], x0, y1, z0, x1, y1, z0, f4, f5);
+						this.verp(vl[4], x0, y1, z0, x1, y1, z0, f4, f5);
 					}
 					if (et[cind] & 32) {
-						verp(vl[5], x1, y1, z0, x1, y1, z1, f5, f6);
+						this.verp(vl[5], x1, y1, z0, x1, y1, z1, f5, f6);
 					}
 					if (et[cind] & 64) {
-						verp(vl[6], x1, y1, z1, x0, y1, z1, f6, f7);
+						this.verp(vl[6], x1, y1, z1, x0, y1, z1, f6, f7);
 					}
 					if (et[cind] & 128) {
-						verp(vl[7], x0, y1, z1, x0, y1, z0, f7, f4);
+						this.verp(vl[7], x0, y1, z1, x0, y1, z0, f7, f4);
 					}
 					if (et[cind] & 256) {
-						verp(vl[8], x0, y0, z0, x0, y1, z0, f0, f4);
+						this.verp(vl[8], x0, y0, z0, x0, y1, z0, f0, f4);
 					}
 					if (et[cind] & 512) {
-						verp(vl[9], x1, y0, z0, x1, y1, z0, f1, f5);
+						this.verp(vl[9], x1, y0, z0, x1, y1, z0, f1, f5);
 					}
 					if (et[cind] & 1024) {
-						verp(vl[10], x1, y0, z1, x1, y1, z1, f2, f6);
+						this.verp(vl[10], x1, y0, z1, x1, y1, z1, f2, f6);
 					}
 					if (et[cind] & 2048) {
-						verp(vl[11], x0, y0, z1, x0, y1, z1, f3, f7);
+						this.verp(vl[11], x0, y0, z1, x0, y1, z1, f3, f7);
 					}
 			
 					nn.x = (f1 + f2 + f5 + f6) - (f0 + f3 + f4 + f7);
@@ -1921,24 +1934,27 @@ RISE.createTexture = function(gl, bmp) {
 		function(t) { ... }
 	t will be time in ms since last callback
 	
+	if period is 0 or unspecified, the timer
+	will use the frame animation API to run
+	as fast as possible
+	
 	@namespace RISE
 	@method createTimer
-	@param period interval in ms
+	@param optional period interval in ms
 	@param handler callback function
 	@return timer control object
 **/
 
-RISE.createTimer = function(period, handler) {
+RISE.createTimer = function(handler, period) {
 
 	var requestAnimationFrame =	
 		window.webkitRequestAnimationFrame ||
 		window.mozRequestAnimationFrame ||
 		window.oRequestAnimationFrame;
 
-	var maxWaitTime = period * 10;
 	var elapsedTime = 0;
 	var lastFrameTime = RISE.misc.getPreciseTime();
-	var lastHandleTime = 0;
+	var interval = 0;
 	var running = false;
 
 	function run() {
@@ -1949,26 +1965,17 @@ RISE.createTimer = function(period, handler) {
 			var dt = t - lastFrameTime;
 			lastFrameTime = t;
 			
-			// throw out any interval greater than 10 * period
-			if (dt > maxWaitTime) {
-				dt = period;
+			// reuse the last interval if this one's too long
+			// this protects the app against weird effects if
+			// the app was paused/tabbed over for a long time
+			if (dt < 500) {
+				interval = dt;
 			}
 			
-			// we use elapsed time to drive events as it won't
-			// update when the application is paused. using the
-			// system time throws up all kinds of trouble here.
-			elapsedTime += dt;
-			
-			var et = elapsedTime - lastHandleTime;
-			
-			// if we've gone past the timer period
-			if (et >= period) {
-				handler(et);
-				lastHandleTime = elapsedTime;
-			}
+			handler(interval);
 
 			// set up the next callback
-			if (requestAnimationFrame) {
+			if (!period && requestAnimationFrame) {
 				requestAnimationFrame(run);
 			} else {
 				setTimeout(run, period);
