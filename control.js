@@ -123,7 +123,6 @@ RISE.prototypes.control = {
 RISE.createControl = function() {
 
 	var o = Object.create(RISE.prototypes.control);
-	o.running = true;
 
 	var raw = {
 		down: false,
@@ -132,11 +131,12 @@ RISE.createControl = function() {
 		lastY: 0,
 		dx: 0,
 		dy: 0
+		run = true;
 	};
 
 	// keyboard events we pass to the calling application
 	window.addEventListener("keydown", function(e) {
-		if (o.running) {
+		if (raw.run) {
 			var action = o.lookup(e.keyCode);
 			if (action) {
 				action.event(true);
@@ -148,7 +148,7 @@ RISE.createControl = function() {
 	}, false);
 
 	window.addEventListener("keyup", function(e) {
-		if (o.running) {
+		if (raw.run) {
 			var action = o.lookup(e.keyCode);
 			if (action) {
 				action.event(false);
@@ -161,7 +161,7 @@ RISE.createControl = function() {
 
 	// but mouse events we handle locally
 	document.body.addEventListener("mousedown", function(e) {
-		if (o.running) {
+		if (raw.run) {
 			var action = o.lookup(-e.button);
 			if (action) {
 				action.event(true);
@@ -177,7 +177,7 @@ RISE.createControl = function() {
 	}, false);
 	
 	document.body.addEventListener("mouseup", function(e) {
-		if (o.running) {
+		if (raw.run) {
 			var action = o.lookup(-e.button);
 			if (action) {
 				action.event(false);
@@ -189,7 +189,7 @@ RISE.createControl = function() {
 	}, false);
 
 	document.body.addEventListener("mousemove", function(e) {
-		if (o.running && (raw.down || raw.lock)) {
+		if (raw.run && (raw.down || raw.lock)) {
 			// if the movement properties are available
 			if (typeof(e.movementX) !== "undefined" ||
 			typeof(e.mozMovementX) !== "undefined" ||
@@ -209,21 +209,14 @@ RISE.createControl = function() {
 		return false;
 	}, false);
 	
-	// define tracking update method
-	o.update = function() {
-		o.trackX = raw.dx;
-		o.trackY = raw.dy;
-		raw.dx = 0;
-		raw.dy = 0;
-	}
-	
-	// handle full screen change event
+	// set handler for full screen change event
 	var fullScreenChange = function () {
 		var db = document.body;
 		if (document.fullScreenElement === db || 
 		document.webkitFullscreenElement === db ||
 		document.mozFullscreenElement === db ||	
 		document.mozFullScreenElement === db) {
+			// if we go full screen, we want pointer lock too
 			db.requestPointerLock = db.requestPointerLock || 
 				db.mozRequestPointerLock || db.webkitRequestPointerLock;
 			db.requestPointerLock();
@@ -234,9 +227,10 @@ RISE.createControl = function() {
 	document.addEventListener("mozfullscreenchange", fullScreenChange, false);
 	document.addEventListener("webkitfullscreenchange", fullScreenChange, false);
 	
-	// handle pointer lock event
+	// set handler for pointer lock event
 	var pointerLockChange = function () {
 		var db = document.body;
+		// if pointer lock succeeded, set raw flag
 		if (document.pointerLockElement === db || 
 		document.webkitPointerLockElement === db ||
 		document.mozPointerLockElement === db) {
@@ -249,6 +243,22 @@ RISE.createControl = function() {
 	document.addEventListener('pointerlockchange', pointerLockChange, false);
 	document.addEventListener('mozpointerlockchange', pointerLockChange, false);
 	document.addEventListener('webkitpointerlockchange', pointerLockChange, false);
+	
+	// add control and update methods
+	// (can't be defined in prototype
+	// as they interact with closure)
+	o.update = function() {
+		o.trackX = raw.dx;
+		o.trackY = raw.dy;
+		raw.dx = 0;
+		raw.dy = 0;
+	};
+	o.start = function() {
+		raw.run = true;
+	};
+	o.stop = function() {
+		raw.run = false;
+	};
 	
 	return o;
 };
