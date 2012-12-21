@@ -54,7 +54,7 @@ RISE.createTexture = function(gl, bmp) {
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 	gl.bindTexture(gl.TEXTURE_2D, o.id);
 	
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, bmp.width, bmp.height, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, bmp.data);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, bmp.width, bmp.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, bmp.data);
 
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);

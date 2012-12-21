@@ -1,4 +1,4 @@
-/** generated on Fri Dec 21 10:19:05 EST 2012 **/
+/** generated on Fri Dec 21 17:05:15 EST 2012 **/
 
 /**
 	Rise Object Library for WebGL Applications
@@ -25,13 +25,15 @@ RISE.prototypes.bitmap = {
 	/**
 		fills a pattern object with a specified intensity
 		
+		toRGBA() in RISE.misc does useful RGBA conversion
+		
 		@method fill
-		@param c number, intensity
+		@param c number, color value in 0xAABBGGRR format
 	**/
 	
 	fill: function(c) {
-		var dt = this.data;
-		var il = this.length;
+		var dt = this.view;
+		var il = dt.length;
 		for (var i = 0; i < il; i++) {
 			dt[i] = c;
 		}
@@ -40,13 +42,15 @@ RISE.prototypes.bitmap = {
 	/**
 		generate a pattern by random walking across image
 		
+		toRGBA() in RISE.misc does useful RGBA conversion
+		
 		blend MUST be the range (0..1)
 		p0-p3 MUST be in range (0...1)
 		
 		@method walk
 		@param reps number, multiplier for iterations
 		@param blend number, multipler for blending
-		@param c number, intensity to blend on each pass
+		@param c number, color value in 0xAABBGGRR format
 		@param p0 number, chance of moving +x on each pass
 		@param p1 number, chance of moving +y on each pass
 		@param p2 number, chance of moving -x on each pass
@@ -54,12 +58,12 @@ RISE.prototypes.bitmap = {
 	**/
 		
 	walk: function (reps, blend, c, p0, p1, p2, p3) {
+		var dt = this.view;
 		var scale = RISE.math.scale;
+		var mixRGBA = RISE.misc.mixRGBA;
 		var w = this.width;
 		var h = this.height;
-		var dt = this.data;
-		var il = Math.round(this.length * reps);
-		var dnelb = 1 - blend;
+		var il = Math.round(w * h * reps);
 		var x, y, i, j, r;
 		
 		x = Math.floor(scale(Math.random(), 0, w));
@@ -67,29 +71,27 @@ RISE.prototypes.bitmap = {
 		for (i = 0; i < il; i++) {
 		
 			j = x + w * y;
-			dt[j] = dt[j] * dnelb + c * blend;
+			dt[j] = mixRGBA(dt[j], c, blend);
 			
-			r = Math.random();
-			
-			if (r < p0) {
+			if (Math.random() < p0) {
 				x++;
 				if (x >= w) {
 					x = 0;
 				}
 			}
-			if (r < p1) {
+			if (Math.random() < p1) {
 				y++;
 				if (y >= h) {
 					y = 0;
 				}
 			}
-			if (r < p2) {
+			if (Math.random() < p2) {
 				x--;
 				if (x < 0) {
 					x = w - 1;
 				}
 			}
-			if (r < p3) {
+			if (Math.random() < p3) {
 				y--;
 				if (y < 0) {
 					y = h - 1;
@@ -101,7 +103,7 @@ RISE.prototypes.bitmap = {
 };
 
 /**
-	creates a new bitmap object
+	creates a new RBGA bitmap object
 	
 	@method createBitmap
 	@param sz number size, must be power of 2
@@ -112,8 +114,9 @@ RISE.createBitmap = function(sz) {
 	var o = Object.create(RISE.prototypes.bitmap);
 	o.width = sz;
 	o.height = sz;
-	o.length = sz * sz;
+	o.length = sz * sz * 4;
 	o.data = new Uint8Array(o.length);
+	o.view = new Uint32Array(o.data.buffer);
 	return o;
 };
 
@@ -929,6 +932,52 @@ RISE.misc = {
 			return window.performance.webkitNow();
 		}
 		return Date.now();
+	},
+	
+	/**
+		convert 4 color values to RGBA value
+		
+		@method toRGBA
+		@param r, g, b, a real values in range (0..1)
+		@return integer representing RBGA value
+	**/
+	
+	toRGBA: function(r, g, b, a) {
+		r = Math.round(r * 255) & 0xff;
+		g = Math.round(g * 255) & 0xff;
+		b = Math.round(b * 255) & 0xff;
+		a = Math.round(a * 255) & 0xff;
+		return r + (g << 8) + (b << 16) + (a << 24);
+	},
+	
+	/**
+		interpolate between two RGBA color values
+		
+		@method mixRGBA
+		@param c1, c2 integers in 0xAABBGGRR color format
+		@param mu mixing factor in range (0..1)
+		@return mixed color in 0xAABBGGRR format
+	**/
+	
+	mixRGBA: function(c1, c2, mu) {
+		var um = 1 - mu;
+
+		var r1 = c1 & 0xff;
+		var g1 = (c1 >> 8) & 0xff;
+		var b1 = (c1 >> 16) & 0xff;
+		var a1 = (c1 >> 24) & 0xff;
+	
+		var r2 = c2 & 0xff;
+		var g2 = (c2 >> 8) & 0xff;
+		var b2 = (c2 >> 16) & 0xff;
+		var a2 = (c2 >> 24) & 0xff;
+		
+		var r = Math.round(um * r1 + mu * r2) & 0xff;
+		var g = Math.round(um * g1 + mu * g2) & 0xff;
+		var b = Math.round(um * b1 + mu * b2) & 0xff;
+		var a = Math.round(um * a1 + mu * a2) & 0xff;
+		
+		return r + (g << 8) + (b << 16) + (a << 24);
 	}
 	
 };
@@ -1916,7 +1965,7 @@ RISE.createTexture = function(gl, bmp) {
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 	gl.bindTexture(gl.TEXTURE_2D, o.id);
 	
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, bmp.width, bmp.height, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, bmp.data);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, bmp.width, bmp.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, bmp.data);
 
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
