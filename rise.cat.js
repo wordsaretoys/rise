@@ -1,4 +1,4 @@
-/** generated on Sat Dec 22 01:01:44 EST 2012 **/
+/** generated on Sat Dec 22 15:03:58 EST 2012 **/
 
 /**
 	Rise Object Library for WebGL Applications
@@ -93,66 +93,6 @@ RISE.prototypes.bitmap = {
 					y = h - 1;
 				}
 			}
-		}
-	},
-	
-	/**
-		generate a pattern by drawing steps across image
-		
-		blend MUST be the range (0..1)
-		brush is a string of characters ("0".."9"). the
-		number is the angle to turn by (x10).
-		
-		@method draw
-		@param reps number, multiplier for iterations
-		@param blend number, multipler for blending
-		@param color number, color value in 0xAABBGGRR format
-		@param brush string, list of rotations to execute
-	**/
-		
-	draw: function (reps, blend, color, brush) {
-		var dt = this.view;
-		var mixRGBA = RISE.misc.mixRGBA;
-		var w = this.width;
-		var h = this.height;
-		var il = Math.round(w * h * reps);
-		var bl = brush.length - 1;
-		var x = y = dx = 0;
-		var dy = 1;
-		var i, j, b;
-		var a, c, s;
-		var nx, ny;
-		
-		for (i = 0, b = 0; i < il; i++) {
-		
-			j = x + w * y;
-			dt[j] = mixRGBA(dt[j], color, blend);
-			
-			a = (brush.charAt(b) - 48) * Math.PI / 180;
-			c = Math.cos(a);
-			s = Math.sin(a);
-			nx = dx * c - dy * s;
-			ny = dy * c + dx * s;
-			dx = nx;
-			dy = ny;			
-			
-			x = Math.round(x + dx);
-			y = Math.round(y + dy);
-			
-			if (x >= w) {
-				x = 0;
-			}
-			if (y >= h) {
-				y = 0;
-			}
-			if (x < 0) {
-				x = w - 1;
-			}
-			if (y < 0) {
-				y = h - 1;
-			}
-			
-			b = (b < bl) ? b + 1 : 0;
 		}
 	}
 
@@ -357,8 +297,9 @@ RISE.prototypes.control = {
 		"4": 52, "5": 53, "6": 54, "7": 55,
 		"8": 56, "9": 57,
 		
-		MOUSE1: -1,
-		MOUSE2: -2
+		LMOUSE: -1,
+		MMOUSE: -2,
+		RMOUSE: -3
 	},
 
 	/**
@@ -484,8 +425,7 @@ RISE.createControl = function() {
 	// but mouse events we handle locally
 	document.body.addEventListener("mousedown", function(e) {
 		if (raw.run) {
-			console.log(e.button);
-			var action = o.lookup(-e.button);
+			var action = o.lookup(-e.button - 1);
 			if (action) {
 				action.event(true);
 			}
