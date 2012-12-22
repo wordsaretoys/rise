@@ -37,8 +37,9 @@ RISE.prototypes.control = {
 		"4": 52, "5": 53, "6": 54, "7": 55,
 		"8": 56, "9": 57,
 		
-		MOUSE1: -1,
-		MOUSE2: -2
+		LMOUSE: -1,
+		MMOUSE: -2,
+		RMOUSE: -3
 	},
 
 	/**
@@ -164,7 +165,7 @@ RISE.createControl = function() {
 	// but mouse events we handle locally
 	document.body.addEventListener("mousedown", function(e) {
 		if (raw.run) {
-			var action = o.lookup(-e.button);
+			var action = o.lookup(-e.button - 1);
 			if (action) {
 				action.event(true);
 			}
