@@ -1,4 +1,4 @@
-/** generated on Sat Dec 22 15:03:58 EST 2012 **/
+/** generated on Sun Dec 23 15:08:50 EST 2012 **/
 
 /**
 	Rise Object Library for WebGL Applications
@@ -23,7 +23,7 @@ RISE = {
 RISE.prototypes.bitmap = {
 
 	/**
-		fills a pattern object with a specified intensity
+		fills a bitmap with a specified color
 		
 		@method fill
 		@param color number, color value in 0xAABBGGRR format
@@ -38,7 +38,7 @@ RISE.prototypes.bitmap = {
 	},
 	
 	/**
-		generate a pattern by random walking across image
+		generate a pattern by random walking across bitmap
 		
 		blend MUST be the range (0..1)
 		p0-p3 MUST be in range (0...1)
@@ -94,8 +94,51 @@ RISE.prototypes.bitmap = {
 				}
 			}
 		}
-	}
+	},
+	
+	/**
+		blends color into the bitmap at random points
+		
+		@method stipple
+		@param reps number, multiplier for iterations
+		@param blend number, multipler for blending
+		@param color number, color value in 0xAABBGGRR format
+	**/
+	
+	stipple: function(reps, blend, color) {
+		var dt = this.view;
+		var scale = RISE.math.scale;
+		var mixRGBA = RISE.misc.mixRGBA;
+		var l = this.width * this.height;
+		var il = Math.round(l * reps);
+		var i;
+		
+		for (i = 0; i < il; i++) {
+			j = Math.floor(scale(Math.random(), 0, l));
+			dt[j] = mixRGBA(dt[j], color, blend);
+		}
+	},
+	
+	pools: function(color) {
+		var dt = this.view;
+		var w = this.width;
+		var h = this.height;
+	
+		for (var x = 0; x < w; x++) {
+			for (var y = 0; y < h; y++) {
+			
+				var f = 0.02;
+			
+				var a = Math.cos(f * x + 0.5) + Math.sin(f * y + 1.32) + Math.cos(2 * f * x + 0.34) + Math.sin(2 * f * y + 3.2);
 
+				var k = (a > 0.5) ? 255 : 0;
+
+				var j = x + w * y;
+				dt[j] = (a > 0.5) ? color : 0;
+			}
+		}
+	
+	}
 };
 
 /**

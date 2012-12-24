@@ -9,7 +9,7 @@
 RISE.prototypes.bitmap = {
 
 	/**
-		fills a pattern object with a specified intensity
+		fills a bitmap with a specified color
 		
 		@method fill
 		@param color number, color value in 0xAABBGGRR format
@@ -24,7 +24,7 @@ RISE.prototypes.bitmap = {
 	},
 	
 	/**
-		generate a pattern by random walking across image
+		generate a pattern by random walking across bitmap
 		
 		blend MUST be the range (0..1)
 		p0-p3 MUST be in range (0...1)
@@ -80,8 +80,30 @@ RISE.prototypes.bitmap = {
 				}
 			}
 		}
+	},
+	
+	/**
+		blends color into the bitmap at random points
+		
+		@method stipple
+		@param reps number, multiplier for iterations
+		@param blend number, multipler for blending
+		@param color number, color value in 0xAABBGGRR format
+	**/
+	
+	stipple: function(reps, blend, color) {
+		var dt = this.view;
+		var scale = RISE.math.scale;
+		var mixRGBA = RISE.misc.mixRGBA;
+		var l = this.width * this.height;
+		var il = Math.round(l * reps);
+		var i;
+		
+		for (i = 0; i < il; i++) {
+			j = Math.floor(scale(Math.random(), 0, l));
+			dt[j] = mixRGBA(dt[j], color, blend);
+		}
 	}
-
 };
 
 /**
