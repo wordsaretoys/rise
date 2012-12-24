@@ -358,13 +358,13 @@ RISE.prototypes.surfacer = {
 		var step = this.step;
 		var thresh = this.threshold;
 		
-		var xs = p.x - size;
-		var ys = p.y - size;
-		var zs = p.z - size;
+		var xs = step * Math.floor(p.x / step) - size;
+		var ys = step * Math.floor(p.y / step) - size;
+		var zs = step * Math.floor(p.z / step) - size;
 		
-		var xe = p.x + size;
-		var ye = p.y + size;
-		var ze = p.z + size;
+		var xe = step * Math.floor(p.x / step) + size;
+		var ye = step * Math.floor(p.y / step) + size;
+		var ze = step * Math.floor(p.z / step) + size;
 		
 		var x0, y0, z0, x1, y1, z1;
 		var i, j, tric, cind;

@@ -1,4 +1,4 @@
-/** generated on Sun Dec 23 15:08:50 EST 2012 **/
+/** generated on Mon Dec 24 13:11:32 EST 2012 **/
 
 /**
 	Rise Object Library for WebGL Applications
@@ -117,27 +117,6 @@ RISE.prototypes.bitmap = {
 			j = Math.floor(scale(Math.random(), 0, l));
 			dt[j] = mixRGBA(dt[j], color, blend);
 		}
-	},
-	
-	pools: function(color) {
-		var dt = this.view;
-		var w = this.width;
-		var h = this.height;
-	
-		for (var x = 0; x < w; x++) {
-			for (var y = 0; y < h; y++) {
-			
-				var f = 0.02;
-			
-				var a = Math.cos(f * x + 0.5) + Math.sin(f * y + 1.32) + Math.cos(2 * f * x + 0.34) + Math.sin(2 * f * y + 3.2);
-
-				var k = (a > 0.5) ? 255 : 0;
-
-				var j = x + w * y;
-				dt[j] = (a > 0.5) ? color : 0;
-			}
-		}
-	
 	}
 };
 
@@ -1816,13 +1795,13 @@ RISE.prototypes.surfacer = {
 		var step = this.step;
 		var thresh = this.threshold;
 		
-		var xs = p.x - size;
-		var ys = p.y - size;
-		var zs = p.z - size;
+		var xs = step * Math.floor(p.x / step) - size;
+		var ys = step * Math.floor(p.y / step) - size;
+		var zs = step * Math.floor(p.z / step) - size;
 		
-		var xe = p.x + size;
-		var ye = p.y + size;
-		var ze = p.z + size;
+		var xe = step * Math.floor(p.x / step) + size;
+		var ye = step * Math.floor(p.y / step) + size;
+		var ze = step * Math.floor(p.z / step) + size;
 		
 		var x0, y0, z0, x1, y1, z1;
 		var i, j, tric, cind;
