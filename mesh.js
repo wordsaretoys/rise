@@ -21,7 +21,7 @@ RISE.prototypes.mesh = {
 		// allocate and fill vertex buffer object
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.vertex);
 		gl.bufferData(gl.ARRAY_BUFFER, vb.data.subarray(0, vb.length), gl.STATIC_DRAW);
-		this.vertexCount = vb.length;
+		this.vertexCount = vb.length / this.stride;
 		
 		// allocate and fill index buffer object, if data is present
 		if (ib) {
@@ -58,7 +58,7 @@ RISE.prototypes.mesh = {
 		if (this.indexCount > 0) {
 			gl.drawElements(this.drawPrimitive, this.indexCount, gl.UNSIGNED_SHORT, 0);
 		} else {
-			gl.drawArrays(this.drawPrimitive, 0, this.vertexCount / this.stride);
+			gl.drawArrays(this.drawPrimitive, 0, this.vertexCount);
 		}
 
 		// disable each attribute
