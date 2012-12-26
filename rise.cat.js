@@ -1,4 +1,4 @@
-/** generated on Tue Dec 25 08:41:09 EST 2012 **/
+/** generated on Wed Dec 26 15:06:06 EST 2012 **/
 
 /**
 	Rise Object Library for WebGL Applications
@@ -117,7 +117,52 @@ RISE.prototypes.bitmap = {
 			j = Math.floor(scale(Math.random(), 0, l));
 			dt[j] = mixRGBA(dt[j], color, blend);
 		}
-	}
+	},
+	
+	/**
+		draw a line across an image (with wrapping)
+		
+		blend MUST be the range (0..1)
+
+		@method scratch
+		@param blend number, multipler for blending
+		@param color number, color value in 0xAABBGGRR format
+		@param x, y number, starting point of scratch
+		@param dx, dy number, direction of scratch
+		@param len number, length of scratch
+	**/
+	
+	scratch: function(blend, color, x, y, dx, dy, len) {
+		var dt = this.view;
+		var mixRGBA = RISE.misc.mixRGBA;
+		var w = this.width;
+		var h = this.height;
+		var dnelb = 1 - blend;
+		var i, j;
+		
+		for (i = 0; i < len; i++) {
+		
+			j = (Math.floor(x) + w * Math.floor(y));
+			dt[j] = dt[j] * dnelb + color * blend;
+			
+			x += dx;
+			y += dy;
+			
+			if (x >= w) {
+				x = 0;
+			}
+			if (y >= h) {
+				y = 0;
+			}
+			if (x < 0) {
+				x = w - 1;
+			}
+			if (y < 0) {
+				y = h - 1;
+			}
+		}
+	},
+	
 };
 
 /**
