@@ -41,7 +41,7 @@ RISE.prototypes.bitmap = {
 		
 	walk: function (reps, blend, color, p0, p1, p2, p3) {
 		var dt = this.view;
-		var scale = RISE.math.scale;
+		var scale = RISE.misc.scale;
 		var mixRGBA = RISE.misc.mixRGBA;
 		var w = this.width;
 		var h = this.height;
@@ -93,7 +93,7 @@ RISE.prototypes.bitmap = {
 	
 	stipple: function(reps, blend, color) {
 		var dt = this.view;
-		var scale = RISE.math.scale;
+		var scale = RISE.misc.scale;
 		var mixRGBA = RISE.misc.mixRGBA;
 		var l = this.width * this.height;
 		var il = Math.round(l * reps);
