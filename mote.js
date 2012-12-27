@@ -118,9 +118,9 @@ RISE.createMote = function() {
 	o.qy = RISE.createQuaternion();
 	o.qz = RISE.createQuaternion();
 	
-	o.rotations.set(RISE.math.MAT_ID_4);
-	o.transpose.set(RISE.math.MAT_ID_4);
-	o.modelview.set(RISE.math.MAT_ID_4);
+	o.rotor.toMatrix(o.rotations);
+	o.rotor.toMatrix(o.transpose);
+	o.rotor.toMatrix(o.modelview);
 
 	o.updateModelview();
 			

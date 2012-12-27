@@ -1,4 +1,4 @@
-/** generated on Wed Dec 26 15:06:06 EST 2012 **/
+/** generated on Wed Dec 26 20:12:05 EST 2012 **/
 
 /**
 	Rise Object Library for WebGL Applications
@@ -666,13 +666,6 @@ RISE.createDisplay = function(id, alpha) {
 
 RISE.math = {
 
-	MAT_ID_4: [
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1
-	],
-
 	/**
 		return the sign of a number
 		
@@ -1167,9 +1160,9 @@ RISE.createMote = function() {
 	o.qy = RISE.createQuaternion();
 	o.qz = RISE.createQuaternion();
 	
-	o.rotations.set(RISE.math.MAT_ID_4);
-	o.transpose.set(RISE.math.MAT_ID_4);
-	o.modelview.set(RISE.math.MAT_ID_4);
+	o.rotor.toMatrix(o.rotations);
+	o.rotor.toMatrix(o.transpose);
+	o.rotor.toMatrix(o.modelview);
 
 	o.updateModelview();
 			

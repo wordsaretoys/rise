@@ -7,13 +7,6 @@
 
 RISE.math = {
 
-	MAT_ID_4: [
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1
-	],
-
 	/**
 		return the sign of a number
 		
