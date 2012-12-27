@@ -1,4 +1,4 @@
-/** generated on Wed Dec 26 20:37:21 EST 2012 **/
+/** generated on Thu Dec 27 09:52:52 EST 2012 **/
 
 /**
 	Rise Object Library for WebGL Applications
@@ -21,6 +21,60 @@ RISE = {
 **/
 
 RISE.prototypes.bitmap = {
+
+	/**
+		fill in a single pixel on the bitmap
+		
+		@method set
+		@param x, y coordinates of point to fill
+		@param color color to fill it with
+	**/
+	
+	set: function(x, y, color) {
+		this.view[Math.floor(x) + this.width * Math.floor(y)] = color;
+	},
+	
+	/**
+		return a single pixel on the bitmap
+		
+		@method get
+		@param x, y coordinates of point to return
+		@return color at point
+	**/
+	
+	get: function(x, y) {
+		return this.view[Math.floor(x) + this.width * Math.floor(y)];
+	},
+
+	/**
+		blend a single pixel on the bitmap
+		
+		@method blend
+		@param x, y coordinates of point to blend
+		@param color to fill it with
+		@param blend mixing factor (0..1)
+	**/
+	
+	blend: function(x, y, color, blend) {
+		var i = Math.floor(x) + this.width * Math.floor(y);
+		this.view[i] = RISE.misc.mixRGBA(this.view[i], color, blend);
+	},
+	
+	/**
+		enforce tiling rules for coordinates
+		
+		@method tile(X|Y)
+		@method x, y, coordinates of point
+		@return corrected coordinates
+	**/
+	
+	tileX: function(x) {
+		return (x >= this.width) ? 0 : (x < 0) ? this.width - 1 : x;
+	},
+	
+	tileY: function(y) {
+		return (y >= this.height) ? 0 : (y < 0) ? this.height - 1 : y;
+	},
 
 	/**
 		fills a bitmap with a specified color
@@ -56,43 +110,30 @@ RISE.prototypes.bitmap = {
 	walk: function (reps, blend, color, p0, p1, p2, p3) {
 		var dt = this.view;
 		var scale = RISE.misc.scale;
-		var mixRGBA = RISE.misc.mixRGBA;
-		var w = this.width;
-		var h = this.height;
-		var il = Math.round(w * h * reps);
-		var x, y, i, j, r;
+		var il = Math.round(this.width * this.height * reps);
+		var x, y, i;
 		
-		x = Math.floor(scale(Math.random(), 0, w));
-		y = Math.floor(scale(Math.random(), 0, h));
+		x = Math.floor(scale(Math.random(), 0, this.width));
+		y = Math.floor(scale(Math.random(), 0, this.height));
 		for (i = 0; i < il; i++) {
-		
-			j = x + w * y;
-			dt[j] = mixRGBA(dt[j], color, blend);
+
+			this.blend(x, y, color, blend);
 			
 			if (Math.random() < p0) {
 				x++;
-				if (x >= w) {
-					x = 0;
-				}
 			}
 			if (Math.random() < p1) {
 				y++;
-				if (y >= h) {
-					y = 0;
-				}
 			}
 			if (Math.random() < p2) {
 				x--;
-				if (x < 0) {
-					x = w - 1;
-				}
 			}
 			if (Math.random() < p3) {
 				y--;
-				if (y < 0) {
-					y = h - 1;
-				}
 			}
+			
+			x = this.tileX(x);
+			y = this.tileY(y);
 		}
 	},
 	
@@ -120,9 +161,9 @@ RISE.prototypes.bitmap = {
 	},
 	
 	/**
-		draw a line across an image (with wrapping)
+		draw a line across an image (with tiling)
 		
-		blend MUST be the range (0..1)
+		blend MUST be in the range (0..1)
 
 		@method scratch
 		@param blend number, multipler for blending
@@ -133,35 +174,50 @@ RISE.prototypes.bitmap = {
 	**/
 	
 	scratch: function(blend, color, x, y, dx, dy, len) {
-		var dt = this.view;
-		var mixRGBA = RISE.misc.mixRGBA;
-		var w = this.width;
-		var h = this.height;
-		var dnelb = 1 - blend;
-		var i, j;
 		
-		for (i = 0; i < len; i++) {
-		
-			j = (Math.floor(x) + w * Math.floor(y));
-			dt[j] = dt[j] * dnelb + color * blend;
-			
+		for (var i = 0; i < len; i++) {
+			this.blend(x, y, color, blend);
 			x += dx;
 			y += dy;
-			
-			if (x >= w) {
-				x = 0;
-			}
-			if (y >= h) {
-				y = 0;
-			}
-			if (x < 0) {
-				x = w - 1;
-			}
-			if (y < 0) {
-				y = h - 1;
-			}
+			x = this.tileX(x);
+			y = this.tileY(y);			
 		}
 	},
+	
+	/**
+		draw a tiled curve across an image
+		
+		blend MUST be in the range (0..1)
+		curve SHOULD be in the range (0..1)
+
+		@method sweep
+		@param reps number, multiplier for iterations
+		@param blend number, multipler for blending
+		@param color number, color value in 0xAABBGGRR format
+		@param curve number, curve factor
+	**/
+	
+	sweep: function(reps, blend, color, curve) {
+		var scale = RISE.misc.scale;
+		var il = Math.round(this.width * this.height * reps);
+		var x = scale(Math.random(), 0, this.width);
+		var y = scale(Math.random(), 0, this.height);
+		var dx = scale(Math.random(), -1, 1);
+		var dy = scale(Math.random(), -1, 1);
+		for (var i = 0; i < il; i++) {
+			this.blend(x, y, color, blend);
+			x += dx;
+			y += dy;
+			x = this.tileX(x);
+			y = this.tileY(y);
+			dx = dx + scale(Math.random(), -curve, curve);
+			dy = dy + scale(Math.random(), -curve, curve);
+			dd = Math.sqrt(dx * dx + dy * dy);
+			dx /= dd;
+			dy /= dd;
+		}
+	}
+	
 	
 };
 
