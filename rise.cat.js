@@ -1,4 +1,4 @@
-/** generated on Thu Dec 27 09:52:52 EST 2012 **/
+/** generated on Thu Dec 27 10:57:52 EST 2012 **/
 
 /**
 	Rise Object Library for WebGL Applications
@@ -177,10 +177,8 @@ RISE.prototypes.bitmap = {
 		
 		for (var i = 0; i < len; i++) {
 			this.blend(x, y, color, blend);
-			x += dx;
-			y += dy;
-			x = this.tileX(x);
-			y = this.tileY(y);			
+			x = this.tileX(x + dx);
+			y = this.tileY(y + dy);			
 		}
 	},
 	
@@ -206,13 +204,11 @@ RISE.prototypes.bitmap = {
 		var dy = scale(Math.random(), -1, 1);
 		for (var i = 0; i < il; i++) {
 			this.blend(x, y, color, blend);
-			x += dx;
-			y += dy;
-			x = this.tileX(x);
-			y = this.tileY(y);
+			x = this.tileX(x + dx);
+			y = this.tileY(y + dy);
 			dx = dx + scale(Math.random(), -curve, curve);
 			dy = dy + scale(Math.random(), -curve, curve);
-			dd = Math.sqrt(dx * dx + dy * dy);
+			dd = 2 * Math.sqrt(dx * dx + dy * dy);
 			dx /= dd;
 			dy /= dd;
 		}

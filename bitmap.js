@@ -163,10 +163,8 @@ RISE.prototypes.bitmap = {
 		
 		for (var i = 0; i < len; i++) {
 			this.blend(x, y, color, blend);
-			x += dx;
-			y += dy;
-			x = this.tileX(x);
-			y = this.tileY(y);			
+			x = this.tileX(x + dx);
+			y = this.tileY(y + dy);			
 		}
 	},
 	
@@ -192,10 +190,8 @@ RISE.prototypes.bitmap = {
 		var dy = scale(Math.random(), -1, 1);
 		for (var i = 0; i < il; i++) {
 			this.blend(x, y, color, blend);
-			x += dx;
-			y += dy;
-			x = this.tileX(x);
-			y = this.tileY(y);
+			x = this.tileX(x + dx);
+			y = this.tileY(y + dy);
 			dx = dx + scale(Math.random(), -curve, curve);
 			dy = dy + scale(Math.random(), -curve, curve);
 			dd = 2 * Math.sqrt(dx * dx + dy * dy);
