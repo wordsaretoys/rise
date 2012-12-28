@@ -237,6 +237,24 @@ RISE.misc = {
 		a[15] = r15;
 
 		return a;
+	},
+	
+	/**
+		create seedable PRNG for repeatable sequences
+		
+		@method prng
+		@param seed initial seed
+		@return new prng object
+	**/
+	
+	prng: function(seed) {
+		return {
+			seed: seed || 0,
+			modu: Math.pow(2, 32),
+			next: function() {
+				return (this.seed = Math.abs(this.seed * 1664525 + 1013904223) % this.modu) / this.modu;
+			}
+		};
 	}
 };
 

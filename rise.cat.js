@@ -1,4 +1,4 @@
-/** generated on Thu Dec 27 10:57:52 EST 2012 **/
+/** generated on Fri Dec 28 13:23:48 EST 2012 **/
 
 /**
 	Rise Object Library for WebGL Applications
@@ -1076,6 +1076,24 @@ RISE.misc = {
 		a[15] = r15;
 
 		return a;
+	},
+	
+	/**
+		create seedable PRNG for repeatable sequences
+		
+		@method prng
+		@param seed initial seed
+		@return new prng object
+	**/
+	
+	prng: function(seed) {
+		return {
+			seed: seed || 0,
+			modu: Math.pow(2, 32),
+			next: function() {
+				return (this.seed = Math.abs(this.seed * 1664525 + 1013904223) % this.modu) / this.modu;
+			}
+		};
 	}
 };
 
