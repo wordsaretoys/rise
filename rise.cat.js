@@ -1,4 +1,4 @@
-/** generated on Fri Dec 28 13:23:48 EST 2012 **/
+/** generated on Mon Dec 31 14:46:53 EST 2012 **/
 
 /**
 	Rise Object Library for WebGL Applications
@@ -1977,8 +1977,8 @@ RISE.prototypes.surfacer = {
 					nn.norm();
 
 					// generate triangle vertexes
-					for (i = 0, j = cind * 16; tt[j + i] != -1; i++) {
-						handle( vl[ tt[j + i] ], nn );
+					for (i = 0, j = cind * 16; tt[j + i] != -1; i += 3) {
+						handle( vl[ tt[j + i] ], vl[ tt[j + i + 1] ], vl[ tt[j + i + 2] ], nn );
 					}
 				}
 			}
@@ -1991,7 +1991,7 @@ RISE.prototypes.surfacer = {
 	creates a surfacer object
 	
 	fsource must accept three floats and return a float, and be defined for all reals.
-	fhandle must accept a vertex and a normal vector.
+	fhandle must accept a three vertexes and a normal vector.
 	
 	@method createSurfacer
 	@param size length of total surface volume
