@@ -1,8 +1,7 @@
-RISE is a prototypal JavaScript object wrapper over WebGL. Adapted from the SOAR toolkit, it implements several important improvements.
+RISE is a prototypal JavaScript object wrapper over WebGL. Adapted from the SOAR toolkit, it implements several improvements.
 
 * Object model separates constructors and prototypes.
 * Buffer/bitmap objects are decoupled from GL wrapper objects.
 * Helper functions wrapped in identifying namespaces (math, misc) rather then the main object.
-* Optimized for surface and texture generation.
 * Non-essential functions from SOAR (heightmaps, noise functions) removed.
-* All singletons rewritten as creatable objects.
+
