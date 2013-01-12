@@ -207,15 +207,16 @@ RISE.prototypes.bitmap = {
 	creates a new RBGA bitmap object
 	
 	@method createBitmap
-	@param sz number size, must be power of 2
+	@param w number width, must be power of 2
+	@param h number height, optional, must be power of 2
 	@return object
 **/
 
-RISE.createBitmap = function(sz) {
+RISE.createBitmap = function(w, h) {
 	var o = Object.create(RISE.prototypes.bitmap);
-	o.width = sz;
-	o.height = sz;
-	o.length = sz * sz * 4;
+	o.width = w;
+	o.height = h || w;
+	o.length = o.width * o.height * 4;
 	o.data = new Uint8Array(o.length);
 	o.view = new Uint32Array(o.data.buffer);
 	return o;
