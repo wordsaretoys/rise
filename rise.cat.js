@@ -1,4 +1,4 @@
-/** generated on Mon Dec 31 14:46:53 EST 2012 **/
+/** generated on Fri Jan 11 19:20:38 EST 2013 **/
 
 /**
 	Rise Object Library for WebGL Applications
@@ -1088,7 +1088,7 @@ RISE.misc = {
 	
 	prng: function(seed) {
 		return {
-			seed: seed || 0,
+			seed: seed || Date.now(),
 			modu: Math.pow(2, 32),
 			next: function() {
 				return (this.seed = Math.abs(this.seed * 1664525 + 1013904223) % this.modu) / this.modu;

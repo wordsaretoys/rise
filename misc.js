@@ -249,7 +249,7 @@ RISE.misc = {
 	
 	prng: function(seed) {
 		return {
-			seed: seed || 0,
+			seed: seed || Date.now(),
 			modu: Math.pow(2, 32),
 			next: function() {
 				return (this.seed = Math.abs(this.seed * 1664525 + 1013904223) % this.modu) / this.modu;
