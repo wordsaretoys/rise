@@ -279,6 +279,20 @@ RISE.prototypes.vector = {
 			this.z = -this.z;
 		}
 		return this;
+	},
+	
+	/**
+		apply modulus n
+		
+		@method mod
+		@param n number to divide by
+	**/
+	
+	mod: function(n) {
+		this.x %= n;
+		this.y %= n;
+		this.z %= n;
+		return this;
 	}
 };
 

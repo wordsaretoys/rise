@@ -1,4 +1,4 @@
-/** generated on Fri Jan 11 20:31:34 EST 2013 **/
+/** generated on Tue Jan 22 15:37:39 EST 2013 **/
 
 /**
 	Rise Object Library for WebGL Applications
@@ -2005,7 +2005,6 @@ RISE.prototypes.surfacer = {
 RISE.createSurfacer = function(size, step, threshold, source, handle) {
 
 	var o = Object.create(RISE.prototypes.surfacer);
-	
 	o.size = size;
 	o.step = step;
 	o.threshold = threshold;
@@ -2445,6 +2444,13 @@ RISE.prototypes.vector = {
 		} else {
 			this.z = -this.z;
 		}
+		return this;
+	},
+	
+	mod: function(n) {
+		this.x %= n;
+		this.y %= n;
+		this.z %= n;
 		return this;
 	}
 };

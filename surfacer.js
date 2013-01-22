@@ -471,7 +471,6 @@ RISE.prototypes.surfacer = {
 RISE.createSurfacer = function(size, step, threshold, source, handle) {
 
 	var o = Object.create(RISE.prototypes.surfacer);
-	
 	o.size = size;
 	o.step = step;
 	o.threshold = threshold;
