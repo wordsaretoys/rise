@@ -250,6 +250,26 @@ RISE.prototypes.vector = {
 	},
 	
 	/**
+		rotates vector via basis vectors
+		
+		simplification of transform method. use when you 
+		have a normal vector--generate cross products to
+		find basis vectors. all must be normalized!
+	
+		@param f front vector
+		@param u up vector
+		@param r right vector
+		@return rotated vector
+	**/
+	
+	rotate: function(f, u, r) {
+		var x = r.x * this.x + r.y * this.y + r.z * this.z;
+		var y = u.x * this.x + u.y * this.y + u.z * this.z;
+		var z = f.x * this.x + f.y * this.y + f.z * this.z;
+		return this.set(x, y, z);
+	},
+	
+	/**
 		generate a guaranteed perpendicular vector (for length > 0)
 		
 		@method perp
