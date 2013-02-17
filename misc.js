@@ -181,7 +181,7 @@ RISE.misc = {
 	
 	cerp: function(y1, y2, mu) {
 		var mu2 = (1.0 - Math.cos(mu * Math.PI)) / 2.0;
-		return lerp(y1, y2, mu2);
+		return this.lerp(y1, y2, mu2);
 	},
 	
 	/**

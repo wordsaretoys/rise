@@ -338,13 +338,13 @@ RISE.prototypes.surfacer = {
 	},
 		
 	/**
-		generate polygons for volume around a specified point
+		generate polygons within a single cube
 		
 		@method generate
 		@param p center of sampling volume
 	**/
 
-	generate: function(p) {
+	generateCube: function(x0, y0, z0, x1, y1, z1) {
 	
 		var et = this.edgeTable;
 		var tt = this.triTable;
@@ -353,10 +353,94 @@ RISE.prototypes.surfacer = {
 		
 		var source = this.source;
 		var handle = this.handle;
+		var thresh = this.threshold;
 		
+		var i, j, cind;
+			
+		// find surface points
+		var f0 = source(x0, y0, z0);
+		var f1 = source(x1, y0, z0);
+		var f2 = source(x1, y0, z1);
+		var f3 = source(x0, y0, z1);
+		var f4 = source(x0, y1, z0);
+		var f5 = source(x1, y1, z0);
+		var f6 = source(x1, y1, z1);
+		var f7 = source(x0, y1, z1);
+
+		// calculate index into edgetable
+		cind =  (f0 < thresh) ? 1 : 0;
+		cind |= (f1 < thresh) ? 2 : 0;
+		cind |= (f2 < thresh) ? 4 : 0;
+		cind |= (f3 < thresh) ? 8 : 0;
+		cind |= (f4 < thresh) ? 16 : 0;
+		cind |= (f5 < thresh) ? 32 : 0;
+		cind |= (f6 < thresh) ? 64 : 0;
+		cind |= (f7 < thresh) ? 128 : 0;
+
+		// surface does not penetrate cube, no triangles for you
+		if (et[cind] === 0)
+			return;
+	
+		// find where the surface intersects the cube
+		if (et[cind] & 1) {
+			this.verp(vl[0], x0, y0, z0, x1, y0, z0, f0, f1);
+		}
+		if (et[cind] & 2) {
+			this.verp(vl[1], x1, y0, z0, x1, y0, z1, f1, f2);
+		}
+		if (et[cind] & 4) {
+			this.verp(vl[2], x1, y0, z1, x0, y0, z1, f2, f3);
+		}
+		if (et[cind] & 8) {
+			this.verp(vl[3], x0, y0, z1, x0, y0, z0, f3, f0);
+		}
+		if (et[cind] & 16) {
+			this.verp(vl[4], x0, y1, z0, x1, y1, z0, f4, f5);
+		}
+		if (et[cind] & 32) {
+			this.verp(vl[5], x1, y1, z0, x1, y1, z1, f5, f6);
+		}
+		if (et[cind] & 64) {
+			this.verp(vl[6], x1, y1, z1, x0, y1, z1, f6, f7);
+		}
+		if (et[cind] & 128) {
+			this.verp(vl[7], x0, y1, z1, x0, y1, z0, f7, f4);
+		}
+		if (et[cind] & 256) {
+			this.verp(vl[8], x0, y0, z0, x0, y1, z0, f0, f4);
+		}
+		if (et[cind] & 512) {
+			this.verp(vl[9], x1, y0, z0, x1, y1, z0, f1, f5);
+		}
+		if (et[cind] & 1024) {
+			this.verp(vl[10], x1, y0, z1, x1, y1, z1, f2, f6);
+		}
+		if (et[cind] & 2048) {
+			this.verp(vl[11], x0, y0, z1, x0, y1, z1, f3, f7);
+		}
+
+		nn.x = (f1 + f2 + f5 + f6) - (f0 + f3 + f4 + f7);
+		nn.y = (f4 + f5 + f6 + f7) - (f0 + f1 + f2 + f3);
+		nn.z = (f2 + f3 + f6 + f7) - (f0 + f1 + f4 + f5);
+		nn.norm();
+
+		// generate triangle vertexes
+		for (i = 0, j = cind * 16; tt[j + i] != -1; i += 3) {
+			handle( vl[ tt[j + i] ], vl[ tt[j + i + 1] ], vl[ tt[j + i + 2] ], nn );
+		}
+	},
+
+	/**
+		generate polygons for volume around a specified point
+		
+		@method generate
+		@param p center of sampling volume
+	**/
+
+	generate: function(p) {
+	
 		var size = this.size;
 		var step = this.step;
-		var thresh = this.threshold;
 		
 		var xs = step * Math.floor(p.x / step) - size;
 		var ys = step * Math.floor(p.y / step) - size;
@@ -367,7 +451,6 @@ RISE.prototypes.surfacer = {
 		var ze = step * Math.floor(p.z / step) + size;
 		
 		var x0, y0, z0, x1, y1, z1;
-		var i, j, tric, cind;
 		
 		for (x0 = xs; x0 <= xe; x0 = x1) {
 			x1 = x0 + step;
@@ -375,82 +458,44 @@ RISE.prototypes.surfacer = {
 				y1 = y0 + step;
 				for (z0 = zs; z0 <= ze; z0 = z1) {
 					z1 = z0 + step;
-			
-					// find surface points
-					var f0 = source(x0, y0, z0);
-					var f1 = source(x1, y0, z0);
-					var f2 = source(x1, y0, z1);
-					var f3 = source(x0, y0, z1);
-					var f4 = source(x0, y1, z0);
-					var f5 = source(x1, y1, z0);
-					var f6 = source(x1, y1, z1);
-					var f7 = source(x0, y1, z1);
-			
-					// calculate index into edgetable
-					cind =  (f0 < thresh) ? 1 : 0;
-					cind |= (f1 < thresh) ? 2 : 0;
-					cind |= (f2 < thresh) ? 4 : 0;
-					cind |= (f3 < thresh) ? 8 : 0;
-					cind |= (f4 < thresh) ? 16 : 0;
-					cind |= (f5 < thresh) ? 32 : 0;
-					cind |= (f6 < thresh) ? 64 : 0;
-					cind |= (f7 < thresh) ? 128 : 0;
+					this.generateCube(x0, y0, z0, x1, y1, z1);
+				}
+			}
+		}
+	},
+	
+	/**
+	 * generates polygons for a general rectilinear volume
+	 *  
+	 * @param xl, yl, zl lower bound of volume 
+	 * @param xh, yh, zh upper bound of volume 
+	 * @param step length of each cube
+	 */
+	generateSlab: function(xl, yl, zl, xh, yh, zh) {
+		var step = this.step;
 
-					// surface does not penetrate cube, no triangles for you
-					if (et[cind] === 0)
-						continue;
-				
-					// find where the surface intersects the cube
-					if (et[cind] & 1) {
-						this.verp(vl[0], x0, y0, z0, x1, y0, z0, f0, f1);
-					}
-					if (et[cind] & 2) {
-						this.verp(vl[1], x1, y0, z0, x1, y0, z1, f1, f2);
-					}
-					if (et[cind] & 4) {
-						this.verp(vl[2], x1, y0, z1, x0, y0, z1, f2, f3);
-					}
-					if (et[cind] & 8) {
-						this.verp(vl[3], x0, y0, z1, x0, y0, z0, f3, f0);
-					}
-					if (et[cind] & 16) {
-						this.verp(vl[4], x0, y1, z0, x1, y1, z0, f4, f5);
-					}
-					if (et[cind] & 32) {
-						this.verp(vl[5], x1, y1, z0, x1, y1, z1, f5, f6);
-					}
-					if (et[cind] & 64) {
-						this.verp(vl[6], x1, y1, z1, x0, y1, z1, f6, f7);
-					}
-					if (et[cind] & 128) {
-						this.verp(vl[7], x0, y1, z1, x0, y1, z0, f7, f4);
-					}
-					if (et[cind] & 256) {
-						this.verp(vl[8], x0, y0, z0, x0, y1, z0, f0, f4);
-					}
-					if (et[cind] & 512) {
-						this.verp(vl[9], x1, y0, z0, x1, y1, z0, f1, f5);
-					}
-					if (et[cind] & 1024) {
-						this.verp(vl[10], x1, y0, z1, x1, y1, z1, f2, f6);
-					}
-					if (et[cind] & 2048) {
-						this.verp(vl[11], x0, y0, z1, x0, y1, z1, f3, f7);
-					}
-			
-					nn.x = (f1 + f2 + f5 + f6) - (f0 + f3 + f4 + f7);
-					nn.y = (f4 + f5 + f6 + f7) - (f0 + f1 + f2 + f3);
-					nn.z = (f2 + f3 + f6 + f7) - (f0 + f1 + f4 + f5);
-					nn.norm();
-
-					// generate triangle vertexes
-					for (i = 0, j = cind * 16; tt[j + i] != -1; i += 3) {
-						handle( vl[ tt[j + i] ], vl[ tt[j + i + 1] ], vl[ tt[j + i + 2] ], nn );
-					}
+		var xs = step * Math.floor(xl / step);
+		var ys = step * Math.floor(yl / step);
+		var zs = step * Math.floor(zl / step);
+		
+		var xe = step * Math.floor(xh / step);
+		var ye = step * Math.floor(yh / step);
+		var ze = step * Math.floor(zh / step);
+		
+		var x0, y0, z0, x1, y1, z1;
+		
+		for (x0 = xs; x0 <= xe; x0 = x1) {
+			x1 = x0 + step;
+			for (y0 = ys; y0 <= ye; y0 = y1) {
+				y1 = y0 + step;
+				for (z0 = zs; z0 <= ze; z0 = z1) {
+					z1 = z0 + step;
+					this.generateCube(x0, y0, z0, x1, y1, z1);
 				}
 			}
 		}
 	}
+	
 		
 };
 
